@@ -98,8 +98,8 @@ loss_function = keras.losses.Huber()
 
 # Number of episodes
 # num_episode = 210000
-# num_episode = 42000
-num_episode = 5
+num_episode = 42000
+# num_episode = 5
 cur_episode = 0
 
 while True:  # Run until solved
