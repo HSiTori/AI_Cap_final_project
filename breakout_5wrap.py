@@ -221,7 +221,7 @@ while True:  # Run until solved
     # Update running reward to check condition for solving
     print("episode:",cur_episode-1,"reward:", episode_reward)
     episode_reward_history.append(episode_reward)
-    if len(episode_reward_history) > 5:
+    if len(episode_reward_history) > 6:
         del episode_reward_history[:1]
     running_reward = np.mean(episode_reward_history)
     f.write(str(running_reward))
