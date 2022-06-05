@@ -31,7 +31,7 @@ env = wrap_deepmind(env, frame_stack=True, scale=True)
 env.seed(seed)
 
 
-path = 'output.txt'
+path = 'output_5wrap.txt'
 f = open(path, 'w')
 
 
