@@ -31,7 +31,7 @@ env = wrap_deepmind(env, frame_stack=True, scale=True)
 env.seed(seed)
 
 
-path = 'output_ori.txt'
+path = 'output_ori_save.txt'
 f = open(path, 'w')
 
 
@@ -62,6 +62,7 @@ model = create_q_model()
 # The weights of a target model get updated every 10000 steps thus when the
 # loss between the Q-values is calculated the target Q-value is stable.
 model_target = create_q_model()
+model.summary()
 
 
 # In[5]:
@@ -98,7 +99,7 @@ loss_function = keras.losses.Huber()
 
 # Number of episodes
 # num_episode = 210000
-num_episode = 5
+num_episode = 50000
 cur_episode = 0
 
 while True:  # Run until solved
@@ -209,8 +210,9 @@ while True:  # Run until solved
     if len(episode_reward_history) > 30:
         del episode_reward_history[:1]
     running_reward = np.mean(episode_reward_history)
-    f.write(str(running_reward))
+    f.write(str(episode_count)+", "+str(running_reward)+", "+str(float(loss)))
     f.write('\n')
+    model.save('model/my_model_ori.h5')
 
     episode_count += 1
 
@@ -218,3 +220,5 @@ while True:  # Run until solved
         print("Solved at episode {}!".format(episode_count))
         break
 f.close()
+new_model = tf.keras.models.load_model('model/my_model_ori.h5')
+new_model.summary()
