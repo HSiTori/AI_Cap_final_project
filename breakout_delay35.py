@@ -6,7 +6,6 @@
 # In[1]:
 
 
-
 # wrapper 太舊了不能用，可找替代品將 input 修成 (84, 84, 4)
 from stable_baselines.common.atari_wrappers import make_atari, wrap_deepmind
 import numpy as np
