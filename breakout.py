@@ -31,7 +31,7 @@ env = wrap_deepmind(env, frame_stack=True, scale=True)
 env.seed(seed)
 
 
-path = 'output_ori_save.txt'
+path = 'model/output_ori_save.txt'
 f = open(path, 'w')
 
 
@@ -112,6 +112,7 @@ while True:  # Run until solved
     episode_reward = 0
 
     for timestep in range(1, max_steps_per_episode):
+        check = 0
         frame_count += 1
 
         # Use epsilon-greedy for exploration
@@ -175,6 +176,7 @@ while True:  # Run until solved
             masks = tf.one_hot(action_sample, num_actions)
 
             with tf.GradientTape() as tape:
+                check = 1
                 # Train the model on the states and updated Q-values
                 q_values = model(state_sample)
 
@@ -206,19 +208,26 @@ while True:  # Run until solved
             break
 
     # Update running reward to check condition for solving
+    if check:
+        print("episode:",cur_episode-1,"reward:", episode_reward, "loss:", float(loss))
+    else:
+        print("episode:",cur_episode-1,"reward:", episode_reward)
     episode_reward_history.append(episode_reward)
     if len(episode_reward_history) > 30:
         del episode_reward_history[:1]
     running_reward = np.mean(episode_reward_history)
-    f.write(str(episode_count)+", "+str(running_reward)+", "+str(float(loss)))
+    if check:
+        f.write(str(episode_count)+", "+str(running_reward)+", "+str(float(loss)))
+    else:
+        f.write(str(episode_count)+", "+str(running_reward))
     f.write('\n')
     model.save('model/my_model_ori.h5')
 
     episode_count += 1
-
     if running_reward > 40:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         break
+
 f.close()
 new_model = tf.keras.models.load_model('model/my_model_ori.h5')
 new_model.summary()
