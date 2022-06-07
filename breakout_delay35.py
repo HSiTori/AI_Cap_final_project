@@ -6,6 +6,7 @@
 # In[1]:
 
 
+
 # wrapper 太舊了不能用，可找替代品將 input 修成 (84, 84, 4)
 from stable_baselines.common.atari_wrappers import make_atari, wrap_deepmind
 import numpy as np
@@ -31,7 +32,7 @@ env = wrap_deepmind(env, frame_stack=True, scale=True)
 env.seed(seed)
 
 
-path = 'output_delay35.txt'
+path = 'model/output_delay35.txt'
 f = open(path, 'w')
 
 
@@ -62,7 +63,7 @@ model = create_q_model()
 # The weights of a target model get updated every 10000 steps thus when the
 # loss between the Q-values is calculated the target Q-value is stable.
 model_target = create_q_model()
-
+model.summary()
 
 # In[5]:
 
@@ -114,6 +115,7 @@ while True:  # Run until solved
     # if die, remove all future reward
 
     for timestep in range(1, max_steps_per_episode):
+        check = 0
         frame_count += 1
 
         for r in reward_list:
@@ -145,16 +147,19 @@ while True:  # Run until solved
             reward_list.append([35,reward])
             print(reward_list)
 
-        if len(reward_list) != 0 and reward_list[0][0] == 0:
-            episode_reward += reward_list[0][1]
+        if len(reward_list) > 0 and reward_list[0][0] <= 0:
+            episode_reward = episode_reward + 1
+            rewards_history.append(1)
             reward_list.pop(0)
-
+        else:
+            rewards_history.append(0)
+            
         # Save actions and states in replay buffer
         action_history.append(action)
         state_history.append(state)
         state_next_history.append(state_next)
         done_history.append(done)
-        rewards_history.append(reward)
+        
         state = state_next
 
         # Update every fourth frame and once batch size is over 32
@@ -187,6 +192,7 @@ while True:  # Run until solved
             masks = tf.one_hot(action_sample, num_actions)
 
             with tf.GradientTape() as tape:
+                check = 1
                 # Train the model on the states and updated Q-values
                 q_values = model(state_sample)
 
@@ -216,7 +222,13 @@ while True:  # Run until solved
 
         if done:
             # if die, remove all future rewards
+            reward_list = []
             break
+
+    if check:
+        print("episode:",cur_episode-1,"reward:", episode_reward, "loss:", loss)
+    else:
+        print("episode:",cur_episode-1,"reward:", episode_reward)
 
     # Update running reward to check condition for solving
     # reward_list = []
@@ -224,12 +236,17 @@ while True:  # Run until solved
     if len(episode_reward_history) > 30:
         del episode_reward_history[:1]
     running_reward = np.mean(episode_reward_history)
-    f.write(str(running_reward))
+    if check:
+        f.write(str(episode_count)+", "+str(running_reward)+", "+str(loss))
+    else:
+        f.write(str(episode_count)+", "+str(running_reward))
     f.write('\n')
-
+    model.save('model/my_model_delay35.h5')
     episode_count += 1
 
     if running_reward > 40:  # Condition to consider the task solved
         print("Solved at episode {}!".format(episode_count))
         break
 f.close()
+new_model = tf.keras.models.load_model('model/my_model_delay35.h5')
+new_model.summary()
