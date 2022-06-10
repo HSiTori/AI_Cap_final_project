@@ -113,8 +113,6 @@ while True:
 
         if cur_frame % update_target_network == 0:
             model_target.set_weights(model.get_weights())
-            template = "running reward: {:.2f} at episode {}, frame count {}"
-            print(template.format(mean_reward, episode_count, cur_frame))
 
         if len(rewards_history) > 100000:
             del rewards_history[:1]
