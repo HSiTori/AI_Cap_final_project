@@ -42,6 +42,8 @@ num_episode = 50000
 cur_episode = 0
 mean_reward = 0
 
+loss_function = keras.losses.Huber()
+
 action_history = []
 state_history = []
 state_next_history = []
@@ -106,12 +108,12 @@ while True:
                 q_values = model(state_sample)
 
                 q_action = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
-                loss = keras.losses.Huber().(updated_q_values, q_action)
+                loss = loss_function(updated_q_values, q_action)
 
             grads = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
-        if cur_frame % update_target_network == 0:
+        if cur_frame % 2000 == 0:
             model_target.set_weights(model.get_weights())
 
         if len(rewards_history) > 100000:
@@ -133,9 +135,9 @@ while True:
         del episode_reward_history[:1]
     mean_reward = np.mean(episode_reward_history)
     if check:
-        f.write(str(episode_count)+", "+str(mean_reward)+", "+str(float(loss)))
+        f.write(str(cur_episode)+", "+str(mean_reward)+", "+str(float(loss)))
     else:
-        f.write(str(episode_count)+", "+str(mean_reward))
+        f.write(str(cur_episode)+", "+str(mean_reward))
     f.write('\n')
     model.save('model/my_model_ori.h5')
 
